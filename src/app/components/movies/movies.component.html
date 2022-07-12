@@ -1,0 +1,194 @@
+<div class="container pt-2 pb-2">
+  <div class="row">
+    <div class="col-md-6">
+     <h1 style="    font-family: fangsong;"> ADD NEW MOVIE</h1>
+    </div>
+    <div class="col-md-6 text-end">
+      <button type="button" class="btn btn-primary addit" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+        Add Movie
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container" *ngIf="movies.length > 0">
+  <div class="row">
+    <div class="col-md-3 mb-4" *ngFor="let movie of movies;let i = index">
+      <div class="card" style="width:100%;">
+        <img class="card-img-top" [src]="imagePrefix+movie?.image" alt=""> 
+        <div class="card-body">
+          <h5 class="card-title">{{movie.name}}</h5>
+          <ng-container *ngFor="let cat of catList;">
+            <p *ngIf="movie.category_id == cat.id">
+              {{cat.name}}
+            </p>
+          </ng-container>
+          <p class="card-text">{{movie.description! |sliceDesc:35}} </p>
+          <button class="btn btn-danger" data-bs-toggle="modal" (click)="selectMovie(movie)"
+          data-bs-target="#exampleModal">Delete</button> &nbsp;
+        <button class="btn btn-primary" (click)="toggleMovieUpdate(movie)" data-bs-toggle="modal" data-bs-target="#exampleModal3">Edit</button> &nbsp;
+        <button [routerLink]="['/movies', movie?.id]" class="btn btn-primary"> View </button>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<!-- Modal Delete -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Deleting Movie</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are You Sure You Want To Delete Movie ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-danger" (click)="deleteMovie(selectedMovie)" data-bs-dismiss="modal">delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ---------- -->
+
+<!-- modal ADD -->
+<div class="modal fade" id="exampleModal2"  tabindex="-1" aria-labelledby="exampleModal2" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModal2">Add Movie</h5>
+        <button type="button" class="btn-close" (click)="reset()" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form [formGroup]="bioSection" (ngSubmit)="callingFunction(bioSection)">
+          <div class="form-group">
+            <label>
+              Name:</label>
+            <input type="text" [class.is-invalid]="bioSection.get('name')?.invalid && bioSection.get('name')?.touched"
+              class="form-control" formControlName="name">
+            <div class="text-danger"
+              *ngIf="bioSection.get('name')?.touched && bioSection.get('name')?.invalid && bioSection.get('name')?.errors">
+              <small *ngIf="bioSection.get('name')?.errors?.['required']">Your name is required</small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              Description: </label>
+            <input type="text"
+              [class.is-invalid]="bioSection.get('description')?.invalid && bioSection.get('description')?.touched"
+              class="form-control" formControlName="description">
+            <div class="text-danger"
+              *ngIf="bioSection.get('description')?.touched && bioSection.get('description')?.invalid && bioSection.get('description')?.errors">
+              <small *ngIf="bioSection.get('description')?.errors?.['required']">Your description is required</small>
+            </div>
+          </div>
+          <label> Category Name</label>
+          <select class="form-select" formControlName="category_id">
+            <option value="">Category</option>
+            <option *ngFor="let cat of catList" [value]="cat.id">{{cat.name}}</option>
+            <div class="text-danger"
+              *ngIf="bioSection.get('category_id')?.touched && bioSection.get('category_id')?.invalid && bioSection.get('category_id')?.errors">
+              <small *ngIf="bioSection.get('category_id')?.errors?.['required']">Your category Name is required</small>
+            </div>
+          </select>
+
+          <div class="form-group">
+            <label>
+              <input type="file" multiple class="hidden" #filePicker (change)="uploadFile($event)" />
+            </label>
+
+            <div>
+              <img [src]="displayImage" alt="">
+            </div>
+          </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="reset()" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success hola" [disabled]="bioSection.invalid">Add</button>
+          </div>
+        </form>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- -------------- -->
+
+<!-- edit Modal -->
+<div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModal3" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModal3">Edit User</h5>
+        <button type="button" class="btn-close" (click)="reset()" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form [formGroup]="bioSection">
+        <pre>{{this.bioSection.value | json}}</pre>
+          <div class="form-group">
+            <label>
+              Name:</label>
+            <input type="text" [class.is-invalid]="bioSection.get('name')?.invalid && bioSection.get('name')?.touched"
+              class="form-control" formControlName="name">
+            <div class="text-danger"
+              *ngIf="bioSection.get('name')?.touched && bioSection.get('name')?.invalid && bioSection.get('name')?.errors">
+              <small *ngIf="bioSection.get('name')?.errors?.['required']">Your name is required</small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              Description: </label>
+            <input type="text"
+              [class.is-invalid]="bioSection.get('description')?.invalid && bioSection.get('description')?.touched"
+              class="form-control" formControlName="description">
+            <div class="text-danger"
+              *ngIf="bioSection.get('description')?.touched && bioSection.get('description')?.invalid && bioSection.get('description')?.errors">
+              <small *ngIf="bioSection.get('description')?.errors?.['required']">Your description is required</small>
+            </div>
+          </div>
+          <label> Category Name</label>
+          <select class="form-select" formControlName="category_id">
+            <option value="">Category</option>
+            <option *ngFor="let cat of catList" [value]="cat.id">{{cat.name}}</option>
+            <div class="text-danger"
+              *ngIf="bioSection.get('category_id')?.touched && bioSection.get('category_id')?.invalid && bioSection.get('category_id')?.errors">
+              <small *ngIf="bioSection.get('category_id')?.errors?.['required']">Your category Name is required</small>
+            </div>
+          </select>
+
+          <div class="form-group">
+            <label>
+              <input type="file" multiple  #filePicker (change)="uploadFile($event)" />
+            </label>
+
+            <div> 
+              <img [src]="displayImage" alt="">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button"  class="btn btn-secondary" (click)="reset()" data-bs-dismiss="modal">Close</button>
+            <button class="btn btn-success" (click)="editUser()" [disabled]="bioSection.invalid">Edit</button>
+          </div>
+        </form>
+
+
+      </div>
+    </div>
+  </div>
+</div>
